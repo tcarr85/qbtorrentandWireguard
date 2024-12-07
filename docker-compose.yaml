@@ -1,0 +1,38 @@
+services:
+  wireguard:
+    image: ghcr.io/linuxserver/wireguard
+    container_name: wireguard
+    cap_add:
+      - NET_ADMIN
+    environment:
+      - SERVERURL=   
+      - PEERDNS=auto
+      - INTERNAL_SUBNET= 
+      - ALLOWEDIPS=0.0.0.0/0
+      - WG_PORT=51820
+      - WG_PRIVATE_KEY=
+      - WG_PUBLIC_KEY=
+      - PROTONVPN_USERNAME=
+      - PROTONVPN_PASSWORD=
+    volumes:
+      - ./config/wireguard:/config
+      - /lib/modules:/lib/modules
+    restart: always
+    network_mode: bridge # Default Docker bridge mode for isolation
+
+  qbittorrent:
+    image: lscr.io/linuxserver/qbittorrent
+    container_name: qbittorrent
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - WEBUI_PORT=8080
+    volumes:
+      - ./config/qbittorrent:/config
+      - ./downloads:/downloads
+    depends_on:
+      - wireguard
+    network_mode: bridge  # Use bridge mode for external access
+    ports:
+      - "192.168.0.7:8080:8080"  # Expose qBittorrent Web UI on the VM's IP
+    restart: always
